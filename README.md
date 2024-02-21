@@ -2,8 +2,8 @@
 
 A simple online judge system.
 
-# Demo Page
-http://ec2-54-82-65-103.compute-1.amazonaws.com/
+# Host Page
+http://mfpoj.com
 
 ## First step
 
