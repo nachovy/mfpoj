@@ -3,7 +3,7 @@
 A simple online judge system.
 
 # Host Page
-http://mfpoj.com
+https://mfpoj.com
 
 ## First step
 
