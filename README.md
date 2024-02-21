@@ -9,13 +9,13 @@ http://ec2-54-82-65-103.compute-1.amazonaws.com/
 
 Clone the repo to your computer:
 ```
-git clone git@github.com:KuribohG/mfpoj.git
+git clone git@github.com:nachovy/mfpoj.git
 cd mfpoj
 ```
 
 Clone the submodule:
 ```
-git submodule update --init --recursive
+git submodule add git@github.com:nachovy/Lo-runner.git lorunner/
 ```
 
 Satisfy prerequisites:
@@ -48,6 +48,12 @@ python3 manage.py createsuperuser
 To run server on your computer:
 ```
 python3 manage.py runserver
+```
+
+To start judging program (you may need root permission because the temporary files are saved in /tmp):
+```
+sudo apt-get install docker.io
+sudo python3 judge.py
 ```
 
 ## FAQ

@@ -102,3 +102,6 @@ upload/
 *.swp
 
 # Django static generated files
+
+# Lorunner submodule
+lorunner/
