@@ -8,7 +8,7 @@ register = template.Library()
 
 @register.filter(is_safe=True)
 
-def quotient(a,b):
+def quotient(a, b):
     if b == 0:
         return "0.00"
     else:

@@ -9,7 +9,7 @@ register = template.Library()
 
 @register.filter(is_safe=True)
 @stringfilter
-def dot(stat,score):
+def dot(stat, score):
     obj = json.loads(stat)
     if score in stat:
         return obj[score]

@@ -222,7 +222,7 @@ def logout(request):
 def ranklist(request):
     all_user_list = User.objects.order_by("-ac","submit","username")
     user_list = User.objects.order_by("-ac","submit","username")
-    #分页大法开启
+    # Paginator begins
     users_per_page = 50
     paginator = Paginator(user_list, users_per_page)
     if 'page' in request.GET.keys():
@@ -237,7 +237,7 @@ def ranklist(request):
         user_list = paginator.page(1)
     except EmptyPage:
         user_list = paginator.page(paginator.num_pages)
-    #分页大法结束
+    # Paginator ends
     if('username' in request.session.keys()):
         context = {'page_l':page_l, 'page_r':page_r, 'all_user_list':all_user_list,'user_list':user_list,'logined': 1, 'name': request.session['username']}
     else:
@@ -254,7 +254,7 @@ def status(request):
             contest = Contest.objects.get(pk=submission.from_contest)
             submission.contest_start_time = contest.start
             submission.contest_end_time = contest.end
-    #分页大法开启
+    # Paginator begins
     if 'page' in request.GET.keys():
         nowpage = request.GET['page']
     else:
@@ -269,7 +269,7 @@ def status(request):
         submission_list = paginator.page(1)
     except EmptyPage:
         submission_list = paginator.page(paginator.num_pages)
-    #分页大法结束
+    # Paginator ends
     nowtime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()+3600*8))
     if('username' in request.session.keys()):
         user = User.objects.filter(username=request.session['username'])[0]
