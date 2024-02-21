@@ -106,3 +106,5 @@ mfpoj/static/images
 
 # Lorunner submodule
 lorunner/
+
+uwsgi.*

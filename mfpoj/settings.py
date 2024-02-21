@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'sslserver',
 ]
 
 MIDDLEWARE = [
@@ -142,4 +143,3 @@ STATICFILES_DIRS = (
 # User-uploaded files
 
 MEDIA_ROOT = '/var/www/mfpoj/upload'
-

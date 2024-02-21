@@ -134,7 +134,6 @@ def contest(request, contest_id):
                 contest_user.score += contest_obj[problem.number]
         contest_user.save()
         
-    #分页大法开启
     problems_per_page = 20
     paginator = Paginator(problem_list, problems_per_page)
     if 'page' in request.GET.keys():
@@ -149,7 +148,6 @@ def contest(request, contest_id):
         problem_list = paginator.page(1)
     except EmptyPage:
         problem_list = paginator.page(paginator.num_pages)
-    #分页大法结束
     
     nowtime = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time()+3600*8))
     
