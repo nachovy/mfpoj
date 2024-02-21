@@ -102,7 +102,7 @@ upload/
 *.swp
 
 # Django static generated files
-mfpoj/static/
+mfpoj/static/images
 
 # Lorunner submodule
 lorunner/
