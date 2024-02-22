@@ -13,22 +13,9 @@ git clone git@github.com:nachovy/mfpoj.git
 cd mfpoj
 ```
 
-Clone the submodule:
-```
-git submodule add git@github.com:nachovy/Lo-runner.git lorunner/
-```
-
 Satisfy prerequisites:
 ```
 sudo pip3 install $(cat requirements.txt)
-```
-
-Install `lorunner`:
-```
-cd lorunner
-sudo python3 setup.py build
-sudo python3 setup.py install
-cd ..
 ```
 
 Then run command line:
