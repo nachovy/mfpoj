@@ -1,5 +1,6 @@
 import json
 import time
+import hashlib
 
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
@@ -29,8 +30,7 @@ def index(request):
 def problemset(request):
     problem_list = Problem.objects.all()
     
-    #分页大法开启
-    problems_per_page = 20 #每页多少道题
+    problems_per_page = 20 
     paginator = Paginator(problem_list, problems_per_page)
     if 'page' in request.GET.keys():
         nowpage = request.GET['page']
@@ -44,8 +44,7 @@ def problemset(request):
         problem_list = paginator.page(1)
     except EmptyPage:
         problem_list = paginator.page(paginator.num_pages)
-    #分页大法结束
-    
+   
     
     if('username' in request.session.keys()):
         s = User.objects.filter(username=request.session['username'])[0]
@@ -64,7 +63,7 @@ def problem(request, problem_id):
     else:
         context = {'problem': problem,'logined': 0, 'root': 0, 'name': ''}
     return render(request, 'problem.html', context)
-    
+
 def user(request, user_id):
     user = User.objects.filter(username=user_id)[0]
     if('username' in request.session.keys()):
@@ -143,6 +142,9 @@ def submit(request, **kwargs):
         context = {'problem': problem,'logined': 0, 'name': ''}
     return render(request, 'submit.html', context)
 
+def password_md5(password):
+    return hashlib.md5(password.encode()).hexdigest()
+    
 def login(request):
     error_message = ""
     if request.method == 'POST':
@@ -152,7 +154,7 @@ def login(request):
             error_message = "Empty password."
         else:
             s = User.objects.filter(username=request.POST['username'])
-            if len(s) == 0 or request.POST['password'] != s[0].password:
+            if len(s) == 0 or password_md5(request.POST['password']) != s[0].password:
                 error_message = "Incorrect username or password."
             else:
                 request.session['username'] = request.POST['username']
@@ -202,7 +204,7 @@ def register(request):
             error_message = "This username has been registered."
         else:
             user = User(username=request.POST['username'], 
-                        password=request.POST['password'],
+                        password=password_md5(request.POST['password']),
                         nickname=request.POST['username'], 
                         stat=json.dumps(stat_default()))
             user.submit = 0
@@ -285,7 +287,7 @@ def modify(request):
             error_message = "Please input old password."
         else:
             s = User.objects.filter(username=request.session['username'])[0]
-            if  request.POST['opassword'] != s.password:
+            if password_md5(request.POST['opassword']) != s.password:
                 error_message = "Incorrect old password."
             elif request.POST['password'] != request.POST['password2']:
                 error_message = "Passwords mismatched."
@@ -295,7 +297,7 @@ def modify(request):
                 if len(request.POST['nickname']) != 0:
                     s.nickname=request.POST['nickname']
                 if len(request.POST['password']) != 0:
-                    s.password=request.POST['password']
+                    s.password=password_md5(request.POST['password'])
                 if len(request.POST['school']) != 0:
                     s.school=request.POST['school']
                 if len(request.POST['email']) != 0:
