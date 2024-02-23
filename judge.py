@@ -129,12 +129,11 @@ def run_one_testcase_py(testcase):
             elif line.startswith('endnvajdfsdoifamfeie'):
                 endtime = int(line.split()[1])
                 rst['timeused'] = (endtime - starttime) / 1000000
-        
         if rst['memoryused'] > testcase.memory_limit * 1024:
             rst['result'] = 'Memory Limit Exceeded'
         elif rst['timeused'] > testcase.time_limit * 1000:
             rst['result'] = 'Time Limit Exceeded'
-        elif "SyntaxError" in res.stderr:
+        elif "SyntaxError" in res.stdout:
             rst['result'] = 'Compile Error'
         elif len(output_lines) != 3:
             rst['result'] = 'Runtime Error'
