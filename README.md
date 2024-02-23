@@ -37,9 +37,10 @@ To run server on your computer:
 python3 manage.py runserver
 ```
 
-To start judging program (you may need root permission because the temporary files are saved in /tmp):
+To start judging program (you may need root permission because the Docker root directory is in /tmp):
 ```
 sudo apt-get install docker.io
+docker build -t mfpoj .
 sudo python3 judge.py
 ```
 

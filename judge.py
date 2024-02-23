@@ -2,6 +2,7 @@ import sys
 import os
 import time
 import json
+import subprocess
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'mfpoj.settings'
 import django
@@ -22,7 +23,7 @@ RESULT_STR = [
     'System Error', 
 ]
 
-def compile_cpp(waiting):
+def compile_code(waiting):
     submission = waiting.submission
     language = submission.language
     source = submission.source
@@ -37,6 +38,11 @@ def compile_cpp(waiting):
             return True
         else:
             return False
+    elif language == "Python":
+        output = open("/tmp/test.py", 'w')
+        output.write(source)
+        return True
+    return True
 
 def solve_output(f):
     with open(f,'r') as fo:
@@ -53,9 +59,9 @@ def solve_output(f):
 
 def check_output(std):
     if solve_output(std) == solve_output('/tmp/output.out'):
-        return 1
+        return True
     else:
-        return 0
+        return False
 
 def get_status_from_result(result):
     priority = {}
@@ -65,9 +71,9 @@ def get_status_from_result(result):
         return "System Error"
     return max([obj['result'] for obj in result])
 
-def run_one_testcase(testcase):
+def run_one_testcase_cpp(testcase):
     os.system("cp "+testcase.input.file.name+" /tmp/input.in")
-    res=os.popen("cp /usr/bin/time /tmp/time;docker run -v /tmp:/mnt -m%dM ubuntu /bin/bash -c \"cd /mnt;ulimit -t %d; date +\'startoifajdsnvcmewrlk %%s%%N\'; { ./time -f \'memoryeiurojlkfdsjorewlkmfnaowrtoinalkdsf %%M\' ./test <input.in >output.out; } 2>&1; date +\'endnvajdfsdoifamfeie %%s%%N\'\""%((testcase.memory_limit+100)*1024,testcase.time_limit+1)).readlines() 
+    res=os.popen("cp /usr/bin/time /tmp/time;docker run -v /tmp:/mnt -m%dM mfpoj /bin/bash -c \"cd /mnt;ulimit -t %d; date +\'startoifajdsnvcmewrlk %%s%%N\'; { ./time -f \'memoryeiurojlkfdsjorewlkmfnaowrtoinalkdsf %%M\' ./test <input.in >output.out; } 2>&1; date +\'endnvajdfsdoifamfeie %%s%%N\'\""%((testcase.memory_limit+100)*1024,testcase.time_limit+1)).readlines() 
     rst={
         'result':'','timeused':-1,'memoryused':-1
     }
@@ -89,11 +95,60 @@ def run_one_testcase(testcase):
     elif len(res)!=3:
         rst['result']='Runtime Error'
     else:
-        if check_output(testcase.output.file.name)==1:
+        if check_output(testcase.output.file.name)==True:
             rst['result']='Accepted'
         else:
             rst['result']='Wrong Answer'
     return rst
+
+def run_one_testcase_py(testcase):
+    os.system("cp "+ testcase.input.file.name + " /tmp/input.in")
+    docker_command = (
+        "cp /usr/bin/time /tmp/time; "
+        "docker run -v /tmp:/mnt -m%dM mfpoj /bin/bash -c "
+        "\"cd /mnt; "
+        "ulimit -t %d; "
+        "date +\'startoifajdsnvcmewrlk %%s%%N\'; "
+        "{ ./time -f \'memoryeiurojlkfdsjorewlkmfnaowrtoinalkdsf %%M\' python3 test.py < input.in > output.out; } "
+        "2>&1; "
+        "date +\'endnvajdfsdoifamfeie %%s%%N\'\""
+    ) % ((testcase.memory_limit+100)*1024, testcase.time_limit + 1)
+    
+    try:
+        # Execute Docker command and capture output
+        res = subprocess.run(docker_command, shell=True, capture_output=True, text=True)
+        output_lines = res.stdout.splitlines()
+
+        # Process output and extract relevant information
+        rst = {'result': '', 'timeused': -1, 'memoryused': -1}
+        for line in output_lines:
+            if line.startswith('memoryeiurojlkfdsjorewlkmfnaowrtoinalkdsf'):
+                rst['memoryused'] = int(line.split()[1])
+            elif line.startswith('startoifajdsnvcmewrlk'):
+                starttime = int(line.split()[1])
+            elif line.startswith('endnvajdfsdoifamfeie'):
+                endtime = int(line.split()[1])
+                rst['timeused'] = (endtime - starttime) / 1000000
+        
+        if rst['memoryused'] > testcase.memory_limit * 1024:
+            rst['result'] = 'Memory Limit Exceeded'
+        elif rst['timeused'] > testcase.time_limit * 1000:
+            rst['result'] = 'Time Limit Exceeded'
+        elif "SyntaxError" in res.stderr:
+            rst['result'] = 'Compile Error'
+        elif len(output_lines) != 3:
+            rst['result'] = 'Runtime Error'
+        else:
+            if check_output(testcase.output.file.name) == True:
+                rst['result'] = 'Accepted'
+            else:
+                rst['result'] = 'Wrong Answer'
+        return rst
+
+    except subprocess.CalledProcessError as e:
+        # Handle errors raised during subprocess execution
+        print("Error:", e)
+        return None
 
 def run_testcases(waiting):
     submission = waiting.submission
@@ -102,14 +157,18 @@ def run_testcases(waiting):
     result = []
     command = ""
     
-    if language == "C++":
-        testcases = len(submission.problem.testcase_set.all())
-        ac = 0
-        for testcase in submission.problem.testcase_set.all():  
-            rst = run_one_testcase(testcase)
-            if rst['result'] == 'Accepted' :
-                ac += 1
+    testcases = len(submission.problem.testcase_set.all())
+    ac = 0
+    for testcase in submission.problem.testcase_set.all():  
+        rst = None
+        if language == "C++":
+            rst = run_one_testcase_cpp(testcase)
+        elif language == "Python":
+            rst = run_one_testcase_py(testcase)
+        if rst is not None:
             result.append(rst)
+            if rst['result'] == 'Accepted':
+                ac += 1
     
     submission.status = get_status_from_result(result)
     if len(result) == 0:
@@ -183,7 +242,7 @@ while True:
     if waiting_list:
         for waiting in waiting_list:
             s = waiting.submission.user
-            if compile_cpp(waiting):
+            if compile_code(waiting):
                 run_testcases(waiting)
             else:
                 solve_CE()
