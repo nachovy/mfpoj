@@ -43,6 +43,7 @@ sudo apt-get install docker.io
 docker build -t mfpoj .
 sudo python3 judge.py
 ```
+Now only C++ and Python are supported.
 
 ## FAQ
 
